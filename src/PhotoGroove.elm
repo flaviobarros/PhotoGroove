@@ -2,10 +2,13 @@ module PhotoGroove exposing (main)
 
 import Browser
 import Html exposing (Html, button, div, h1, h3, img, input, label, text)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (class, classList, id, src)
 import Html.Events exposing (onClick)
 import Http
+import Json.Decode exposing (Decoder, bool, field, int, list, map3, string)
+import Json.Decode.Pipeline exposing (optional, required)
 import Random
+import Task exposing (succeed)
 
 
 urlPrefix : String
@@ -92,7 +95,15 @@ type ThumbnailSize
 
 
 type alias Photo =
-    { url : String }
+    { url : String, size : Int, title : String }
+
+
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo
+        |> required "url" string
+        |> required "size" int
+        |> optional "title" string "(untitled)"
 
 
 type Status
