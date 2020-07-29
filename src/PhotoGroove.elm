@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Random
+import Spinner
 
 
 urlPrefix : String
@@ -17,8 +18,10 @@ type Msg
     = ClickedPhoto String
     | ClickedSize ThumbnailSize
     | ClickedSurprisedMe
+    | ClickedSpinner
     | GotRandomPhoto Photo
     | GotPhotos (Result Http.Error String)
+    | SpinnerMsg Spinner.Msg
 
 
 view : Model -> Html Msg
@@ -29,7 +32,7 @@ view model =
                 viewLoaded photos selectedUrl model.chosenSize
 
             Loading ->
-                []
+                [ div [] [ Spinner.view Spinner.defaultConfig model.spinner ] ]
 
             Errored errorMessage ->
                 [ text ("Error: " ++ errorMessage) ]
@@ -38,6 +41,9 @@ view model =
 viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
 viewLoaded photos selectedUrl chosenSize =
     [ h1 [] [ text "Photo Groove" ]
+    , button
+        [ onClick ClickedSpinner ]
+        [ text "Supinner!" ]
     , button
         [ onClick ClickedSurprisedMe ]
         [ text "Surprise Me!" ]
@@ -104,6 +110,7 @@ type Status
 type alias Model =
     { status : Status
     , chosenSize : ThumbnailSize
+    , spinner : Spinner.Model
     }
 
 
@@ -111,12 +118,22 @@ initialModel : Model
 initialModel =
     { status = Loading
     , chosenSize = Medium
+    , spinner = Spinner.init
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SpinnerMsg spinnerMsg ->
+            let
+                spinnerModel =
+                    Spinner.update spinnerMsg model.spinner
+            in
+            ( { model | spinner = spinnerModel }
+            , Cmd.none
+            )
+
         ClickedPhoto url ->
             ( { model | status = selectUrl url model.status }, Cmd.none )
 
@@ -138,6 +155,9 @@ update msg model =
 
         ClickedSize size ->
             ( { model | chosenSize = size }, Cmd.none )
+
+        ClickedSpinner ->
+            ( { model | status = Loading }, Cmd.none )
 
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
@@ -187,5 +207,5 @@ main =
         { init = \_ -> ( initialModel, initialCmd )
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = \model -> Sub.map SpinnerMsg Spinner.subscription
         }

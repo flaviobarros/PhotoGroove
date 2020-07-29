@@ -4693,6 +4693,9 @@ var $elm$core$Set$toList = function (_v0) {
 	return $elm$core$Dict$keys(dict);
 };
 var $elm$core$Basics$GT = {$: 'GT'};
+var $author$project$PhotoGroove$SpinnerMsg = function (a) {
+	return {$: 'SpinnerMsg', a: a};
+};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -6191,9 +6194,148 @@ var $author$project$PhotoGroove$initialCmd = $elm$http$Http$get(
 	});
 var $author$project$PhotoGroove$Loading = {$: 'Loading'};
 var $author$project$PhotoGroove$Medium = {$: 'Medium'};
-var $author$project$PhotoGroove$initialModel = {chosenSize: $author$project$PhotoGroove$Medium, status: $author$project$PhotoGroove$Loading};
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $damienklinnert$elm_spinner$Spinner$Model = function (a) {
+	return {$: 'Model', a: a};
+};
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $damienklinnert$elm_spinner$Spinner$init = $damienklinnert$elm_spinner$Spinner$Model(
+	$elm$time$Time$millisToPosix(0));
+var $author$project$PhotoGroove$initialModel = {chosenSize: $author$project$PhotoGroove$Medium, spinner: $damienklinnert$elm_spinner$Spinner$init, status: $author$project$PhotoGroove$Loading};
+var $elm$core$Platform$Sub$map = _Platform_map;
+var $damienklinnert$elm_spinner$Spinner$AnimationFrame = function (a) {
+	return {$: 'AnimationFrame', a: a};
+};
+var $elm$browser$Browser$AnimationManager$Time = function (a) {
+	return {$: 'Time', a: a};
+};
+var $elm$browser$Browser$AnimationManager$State = F3(
+	function (subs, request, oldTime) {
+		return {oldTime: oldTime, request: request, subs: subs};
+	});
+var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
+	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
+var $elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
+var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
+var $elm$browser$Browser$AnimationManager$onEffects = F3(
+	function (router, subs, _v0) {
+		var request = _v0.request;
+		var oldTime = _v0.oldTime;
+		var _v1 = _Utils_Tuple2(request, subs);
+		if (_v1.a.$ === 'Nothing') {
+			if (!_v1.b.b) {
+				var _v2 = _v1.a;
+				return $elm$browser$Browser$AnimationManager$init;
+			} else {
+				var _v4 = _v1.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (pid) {
+						return A2(
+							$elm$core$Task$andThen,
+							function (time) {
+								return $elm$core$Task$succeed(
+									A3(
+										$elm$browser$Browser$AnimationManager$State,
+										subs,
+										$elm$core$Maybe$Just(pid),
+										time));
+							},
+							$elm$browser$Browser$AnimationManager$now);
+					},
+					$elm$core$Process$spawn(
+						A2(
+							$elm$core$Task$andThen,
+							$elm$core$Platform$sendToSelf(router),
+							$elm$browser$Browser$AnimationManager$rAF)));
+			}
+		} else {
+			if (!_v1.b.b) {
+				var pid = _v1.a.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v3) {
+						return $elm$browser$Browser$AnimationManager$init;
+					},
+					$elm$core$Process$kill(pid));
+			} else {
+				return $elm$core$Task$succeed(
+					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
+			}
+		}
+	});
+var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
+	function (router, newTime, _v0) {
+		var subs = _v0.subs;
+		var oldTime = _v0.oldTime;
+		var send = function (sub) {
+			if (sub.$ === 'Time') {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(
+						$elm$time$Time$millisToPosix(newTime)));
+			} else {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(newTime - oldTime));
+			}
+		};
+		return A2(
+			$elm$core$Task$andThen,
+			function (pid) {
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v1) {
+						return $elm$core$Task$succeed(
+							A3(
+								$elm$browser$Browser$AnimationManager$State,
+								subs,
+								$elm$core$Maybe$Just(pid),
+								newTime));
+					},
+					$elm$core$Task$sequence(
+						A2($elm$core$List$map, send, subs)));
+			},
+			$elm$core$Process$spawn(
+				A2(
+					$elm$core$Task$andThen,
+					$elm$core$Platform$sendToSelf(router),
+					$elm$browser$Browser$AnimationManager$rAF)));
+	});
+var $elm$browser$Browser$AnimationManager$Delta = function (a) {
+	return {$: 'Delta', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$browser$Browser$AnimationManager$subMap = F2(
+	function (func, sub) {
+		if (sub.$ === 'Time') {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Time(
+				A2($elm$core$Basics$composeL, func, tagger));
+		} else {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Delta(
+				A2($elm$core$Basics$composeL, func, tagger));
+		}
+	});
+_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
+var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
+var $elm$browser$Browser$AnimationManager$onAnimationFrame = function (tagger) {
+	return $elm$browser$Browser$AnimationManager$subscription(
+		$elm$browser$Browser$AnimationManager$Time(tagger));
+};
+var $elm$browser$Browser$Events$onAnimationFrame = $elm$browser$Browser$AnimationManager$onAnimationFrame;
+var $damienklinnert$elm_spinner$Spinner$subscription = $elm$browser$Browser$Events$onAnimationFrame($damienklinnert$elm_spinner$Spinner$AnimationFrame);
 var $author$project$PhotoGroove$Errored = function (a) {
 	return {$: 'Errored', a: a};
 };
@@ -6240,10 +6382,6 @@ var $elm$time$Time$Zone = F2(
 		return {$: 'Zone', a: a, b: b};
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$posixToMillis = function (_v0) {
 	var millis = _v0.a;
@@ -6416,9 +6554,27 @@ var $elm$random$Random$uniform = F2(
 			$elm$random$Random$addOne(value),
 			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
 	});
+var $damienklinnert$elm_spinner$Spinner$update = F2(
+	function (msg, _v0) {
+		var time = _v0.a;
+		if (msg.$ === 'Noop') {
+			return $damienklinnert$elm_spinner$Spinner$Model(time);
+		} else {
+			var newTime = msg.a;
+			return $damienklinnert$elm_spinner$Spinner$Model(newTime);
+		}
+	});
 var $author$project$PhotoGroove$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'SpinnerMsg':
+				var spinnerMsg = msg.a;
+				var spinnerModel = A2($damienklinnert$elm_spinner$Spinner$update, spinnerMsg, model.spinner);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{spinner: spinnerModel}),
+					$elm$core$Platform$Cmd$none);
 			case 'ClickedPhoto':
 				var url = msg.a;
 				return _Utils_Tuple2(
@@ -6458,6 +6614,12 @@ var $author$project$PhotoGroove$update = F2(
 					_Utils_update(
 						model,
 						{chosenSize: size}),
+					$elm$core$Platform$Cmd$none);
+			case 'ClickedSpinner':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$PhotoGroove$Loading}),
 					$elm$core$Platform$Cmd$none);
 			case 'GotRandomPhoto':
 				var photo = msg.a;
@@ -6514,9 +6676,172 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $damienklinnert$elm_spinner$Spinner$Clockwise = {$: 'Clockwise'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $avh4$elm_color$Color$RgbaSpace = F4(
+	function (a, b, c, d) {
+		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
+	});
+var $avh4$elm_color$Color$white = A4($avh4$elm_color$Color$RgbaSpace, 255 / 255, 255 / 255, 255 / 255, 1.0);
+var $damienklinnert$elm_spinner$Spinner$defaultConfig = {
+	color: $elm$core$Basics$always($avh4$elm_color$Color$white),
+	corners: 1,
+	direction: $damienklinnert$elm_spinner$Spinner$Clockwise,
+	hwaccel: false,
+	length: 28,
+	lines: 13,
+	opacity: 0.25,
+	radius: 42,
+	rotate: 0,
+	scale: 1,
+	shadow: true,
+	speed: 1,
+	trail: 60,
+	translateX: 50,
+	translateY: 50,
+	width: 14
+};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $elm$core$Basics$round = _Basics_round;
+var $avh4$elm_color$Color$toCssString = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var roundTo = function (x) {
+		return $elm$core$Basics$round(x * 1000) / 1000;
+	};
+	var pct = function (x) {
+		return $elm$core$Basics$round(x * 10000) / 100;
+	};
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				'rgba(',
+				$elm$core$String$fromFloat(
+				pct(r)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(g)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(b)),
+				'%,',
+				$elm$core$String$fromFloat(
+				roundTo(a)),
+				')'
+			]));
+};
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $damienklinnert$elm_spinner$Spinner$barStyles = F3(
+	function (cfg, time, n) {
+		var scaledTrail = $elm$core$Basics$ceiling((cfg.lines * cfg.trail) / 100);
+		var fullBlinkTime = 1000 / cfg.speed;
+		var movePerLight = ((n / cfg.lines) * fullBlinkTime) | 0;
+		var lineOpacity = A2($elm$core$Basics$modBy, fullBlinkTime | 0, 1000 - ((time | 0) + movePerLight)) / 1000;
+		var trailedOpacity = A2($elm$core$Basics$max, 0, (cfg.lines * lineOpacity) - (cfg.lines - scaledTrail)) / scaledTrail;
+		var directionBasedDeg = _Utils_eq(cfg.direction, $damienklinnert$elm_spinner$Spinner$Clockwise) ? (cfg.lines - n) : n;
+		var deg = $elm$core$String$fromFloat(((360 / cfg.lines) * directionBasedDeg) + cfg.rotate);
+		var borderRadius = (cfg.corners * cfg.width) / 2;
+		var baseLinedOpacity = $elm$core$String$fromFloat(
+			A2($elm$core$Basics$max, cfg.opacity, trailedOpacity));
+		return _List_fromArray(
+			[
+				A2(
+				$elm$html$Html$Attributes$style,
+				'background',
+				$avh4$elm_color$Color$toCssString(
+					cfg.color(n))),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'height',
+				$elm$core$String$fromFloat(cfg.width) + 'px'),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'width',
+				$elm$core$String$fromFloat(cfg.length + cfg.width) + 'px'),
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+				A2($elm$html$Html$Attributes$style, 'transform-origin', 'left'),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'transform',
+				'rotate(' + (deg + ('deg) translate(' + ($elm$core$String$fromFloat(cfg.radius) + 'px, 0px)')))),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'border-radius',
+				$elm$core$String$fromFloat(borderRadius) + 'px'),
+				A2($elm$html$Html$Attributes$style, 'opacity', baseLinedOpacity),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'box-shadow',
+				cfg.shadow ? '0 0 4px #000' : 'none'),
+				A2(
+				$elm$html$Html$Attributes$style,
+				'-webkit-box-shadow',
+				cfg.shadow ? '0 0 4px #000' : 'none')
+			]);
+	});
+var $damienklinnert$elm_spinner$Spinner$outerStyle = function (cfg) {
+	return _List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2(
+			$elm$html$Html$Attributes$style,
+			'top',
+			'calc(' + ($elm$core$String$fromFloat(cfg.translateY) + '%)')),
+			A2(
+			$elm$html$Html$Attributes$style,
+			'left',
+			$elm$core$String$fromFloat(cfg.translateX) + '%'),
+			A2(
+			$elm$html$Html$Attributes$style,
+			'transform',
+			'scale(' + ($elm$core$String$fromFloat(cfg.scale) + (')' + (cfg.hwaccel ? ' translate3d(0px, 0px, 0px)' : ''))))
+		]);
+};
+var $damienklinnert$elm_spinner$Spinner$view = F2(
+	function (cfg, _v0) {
+		var time = _v0.a;
+		var range = A2(
+			$elm$core$List$map,
+			$elm$core$Basics$toFloat,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$Basics$floor(cfg.lines) - 1));
+		var floatTime = $elm$time$Time$posixToMillis(time);
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (i) {
+					return A2(
+						$elm$html$Html$div,
+						$damienklinnert$elm_spinner$Spinner$outerStyle(cfg),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								A3($damienklinnert$elm_spinner$Spinner$barStyles, cfg, floatTime, i),
+								_List_Nil)
+							]));
+				},
+				range));
+	});
+var $author$project$PhotoGroove$ClickedSpinner = {$: 'ClickedSpinner'};
 var $author$project$PhotoGroove$ClickedSurprisedMe = {$: 'ClickedSurprisedMe'};
 var $author$project$PhotoGroove$Large = {$: 'Large'};
 var $author$project$PhotoGroove$Small = {$: 'Small'};
@@ -6649,6 +6974,16 @@ var $author$project$PhotoGroove$viewLoaded = F3(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
+						$elm$html$Html$Events$onClick($author$project$PhotoGroove$ClickedSpinner)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Supinner!')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
 						$elm$html$Html$Events$onClick($author$project$PhotoGroove$ClickedSurprisedMe)
 					]),
 				_List_fromArray(
@@ -6710,7 +7045,16 @@ var $author$project$PhotoGroove$view = function (model) {
 					var selectedUrl = _v0.b;
 					return A3($author$project$PhotoGroove$viewLoaded, photos, selectedUrl, model.chosenSize);
 				case 'Loading':
-					return _List_Nil;
+					return _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2($damienklinnert$elm_spinner$Spinner$view, $damienklinnert$elm_spinner$Spinner$defaultConfig, model.spinner)
+								]))
+						]);
 				default:
 					var errorMessage = _v0.a;
 					return _List_fromArray(
@@ -6725,8 +7069,8 @@ var $author$project$PhotoGroove$main = $elm$browser$Browser$element(
 		init: function (_v0) {
 			return _Utils_Tuple2($author$project$PhotoGroove$initialModel, $author$project$PhotoGroove$initialCmd);
 		},
-		subscriptions: function (_v1) {
-			return $elm$core$Platform$Sub$none;
+		subscriptions: function (model) {
+			return A2($elm$core$Platform$Sub$map, $author$project$PhotoGroove$SpinnerMsg, $damienklinnert$elm_spinner$Spinner$subscription);
 		},
 		update: $author$project$PhotoGroove$update,
 		view: $author$project$PhotoGroove$view
